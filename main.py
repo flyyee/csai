@@ -1,3 +1,7 @@
+import wx
+
+from notif_wx import NotifWin
+
 # Mock main program
 # Only used as a guide
 
