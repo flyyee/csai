@@ -1,6 +1,7 @@
 import wx
+import sys
 
-from notif_wx import NotifWin
+from notif import NotifWin
 
 # Mock main program
 # Only used as a guide
@@ -11,7 +12,8 @@ def main(win):
     pass
 
 if __name__ == "__main__":
+    cmd_args = sys.argv
+    help_loc = cmd_args[1] if len(cmd_args) > 1 else "UPPER_LEFT"
     app = wx.App()
-    win = NotifWin()
-    win.show()
+    win = NotifWin(help_loc)
     app.MainLoop()
