@@ -1,5 +1,5 @@
 import tensorflow as tf
-from load_data import INPUT_COLS
+from load_data import loadCSV, INPUT_COLS
 
 class BaseModel(tf.keras.Sequential):
     def __init__(self):
@@ -23,7 +23,7 @@ class BaseModel(tf.keras.Sequential):
             columns.append(tf.feature_column.numeric_column(title, shape=[len(INPUT_COLS)]))
         self.add(tf.keras.layers.DenseFeatures(columns))
 
-    def train(self, data, epochs, print_freq=25):
+    def train(self, data, epochs=1, print_freq=25):
         train_loss = []
         train_acc = []
 
@@ -54,7 +54,7 @@ class BaseModel(tf.keras.Sequential):
             train_acc.append(epoch_accuracy.result())
 
             # Save after every epoch
-            model.save_weights("./checkpoints/{}".format(self.__name__))
+            model.save_weights("./checkpoints/{}.ckpt".format(self.__name__))
 
             # Print status at specific intervals
             if epoch % print_freq == 0:
@@ -66,3 +66,11 @@ class BaseModel(tf.keras.Sequential):
             prediction = tf.argmax(self(features, training=False))
             test_accuracy.update_state(targets, predictions, sample_weights=weights)
         print("Test accuracy: {:.3%}".format(test_accuracy.result()))
+
+if __name__ == "__main__":
+    # Sample training code
+    train_data = loadCSV("data/train.csv")
+    model = BaseModel()
+    model.summary() # Optional – prints a summary of the model
+    model.train(train_data)
+    model.save("./saved_models/{}.h5".format(model.__name__))
