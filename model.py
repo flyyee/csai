@@ -1,11 +1,19 @@
 import tensorflow as tf
-from load_data import loadCSV, INPUT_COLS
+from load_data import INPUT_COLS
+
+models = {
+    "BaseModel": BaseModel,
+    "CNN": CNN,
+    "LSTM": LSTM,
+    "GRU": GRU
+}
 
 class BaseModel(tf.keras.Sequential):
-    def __init__(self):
+    def __init__(self, nlayers=1):
         tf.keras.Sequential.__init__(self)
         self.build_preprocess()
-        self.create_model()
+        self.create_model(nlayers=nlayers)
+        self.add(tf.keras.layers.Dense(1)) # TODO: change number of outputs based on output classes
 
         # Loss and optimiser functions – can be changed if needed
         self.loss_obj = tf.keras.losses.BinaryCrossentropy(from_logits=True)
@@ -14,8 +22,7 @@ class BaseModel(tf.keras.Sequential):
     def create_model(self, nlayers=1):
         # Can be varied to build different types of models
         for _ in range(nlayers):
-            self.add(tf.keras.layers.Dense(128))
-        self.add(tf.keras.layers.Dense(1))
+            self.add(tf.keras.layers.Dense(128, activation="sigmoid"))
 
     def build_preprocess(self):
         columns = []
@@ -67,10 +74,19 @@ class BaseModel(tf.keras.Sequential):
             test_accuracy.update_state(targets, predictions, sample_weights=weights)
         print("Test accuracy: {:.3%}".format(test_accuracy.result()))
 
-if __name__ == "__main__":
-    # Sample training code
-    train_data = loadCSV("data/train.csv")
-    model = BaseModel()
-    model.summary() # Optional – prints a summary of the model
-    model.train(train_data)
-    model.save("./saved_models/{}.h5".format(model.__name__))
+class CNN(BaseModel):
+    def create_model(self, nlayers=1):
+        for _ in range(nlayers):
+            self.add(tf.keras.layers.Conv2D(128, (3,3), activation="sigmoid"))
+            self.add(tf.keras.layers.Dropout(0.2))
+            self.add(tf.keras.layers.MaxPool2D())
+
+class LSTM(BaseModel):
+    def create_model(self, nlayers=1):
+        for _ in range(nlayers):
+            self.add(tf.keras.layers.LSTM(128, dropout=0.2)) # default activation is tanh
+
+class GRU(BaseModel):
+    def create_model(self, nlayers=1):
+        for _ in range(nlayers):
+            self.add(tf.keras.layers.GRU(128, dropout=0.2)) # default activation is tanh
