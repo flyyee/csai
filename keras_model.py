@@ -1,4 +1,5 @@
 import tensorflow as tf
+from numpy import transpose
 from load_data import INPUT_COLS
 
 class KerasModel():
@@ -26,7 +27,7 @@ class KerasModel():
             prev_layer = new_layer
         return prev_layer
 
-    def train(self, data, batch_size=3, epochs=1):
+    def train(self, data, batch_size=3, epochs=1, **kwargs):
         inputs, targets, weights = data
         checkpoint = tf.keras.callbacks.ModelCheckpoint(
             filepath="./checkpoints/{}.ckpt".format(self.type),
@@ -38,17 +39,27 @@ class KerasModel():
             batch_size=batch_size,
             epochs=epochs,
             sample_weight=[weights, weights],
-            callbacks=[checkpoint]
+            callbacks=[checkpoint],
+            **kwargs
         )
 
-    def test(self, data, batch_size=3):
+    def test(self, data, batch_size=3, **kwargs):
         inputs, targets, weights = data
         self.model.evaluate(
             {title: inputs[i] for i, title in enumerate(INPUT_COLS)},
             {"target_yaw": targets[0], "target_pitch": targets[1]},
             batch_size=batch_size,
-            sample_weight=[weights, weights]
+            sample_weight=[weights, weights],
+            **kwargs
         )
+
+    def predict(self, inputs, batch_size=3, **kwargs):
+        predictions = self.model.predict(
+            {title: inputs[i] for i, title in enumerate(INPUT_COLS)},
+            batch_size=batch_size,
+            **kwargs
+        )
+        return transpose(predictions)[0]
 
     def summary(self):
         self.model.summary()
@@ -81,7 +92,7 @@ class KerasLSTM(KerasModel):
     def __init__(self, nlayers=1):
         super().__init__(nlayers)
         self.type = "LSTM"
-        
+
     def create_model(self, nlayers):
         prev_layer = self.preprocess
         for _ in range(nlayers):
