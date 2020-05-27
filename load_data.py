@@ -9,8 +9,9 @@ for pnum in range(SPOTTED_CAP):
 # Demofiles
 # TODO: change to a list of demofiles
 TRAIN_FILES = "./demofiles/singularity-vs-saw-m3-dust2,76561197978321481,1,07"
+TEST_FILES = "./demofiles/singularity-vs-saw-m3-dust2,76561198120557348,0,68"
 
-def loadDemo(demofn, tick_diff=1000, batch_size=2):
+def loadDemo(demofn, tick_diff=1000):
     # TODO: allow loading of multiple files
     # TODO: keep last few spotted values, instead of first few
     kd = float(demofn[-4:].replace(",", "."))
