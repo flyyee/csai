@@ -11,10 +11,10 @@ if __name__ == "__main__":
         print("usage: test.py <savedmodel_type>")
         sys.exit()
     models = {
-        "BaseModel": KerasModel(nlayers),
-        # "CNN": KerasCNN(nlayers),
-        # "LSTM": KerasLSTM(nlayers),
-        # "GRU": KerasGRU(nlayers)
+        "BaseModel": KerasModel(nlayers=nlayers),
+        "CNN": KerasCNN(nlayers=nlayers),
+        "LSTM": KerasLSTM(nlayers=nlayers),
+        "GRU": KerasGRU(nlayers=nlayers)
     }
     model = models[cmd_args[1]]
     model.load("./saved_models/{}.h5".format(cmd_args[1]))

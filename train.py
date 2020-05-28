@@ -13,10 +13,10 @@ if __name__ == "__main__":
     #     "GRU": GRU(nlayers)
     # }
     models = {
-        "BaseModel": KerasModel(nlayers),
-        # "CNN": KerasCNN(nlayers),
-        # "LSTM": KerasLSTM(nlayers),
-        # "GRU": KerasGRU(nlayers)
+        "BaseModel": KerasModel(nlayers=nlayers),
+        "CNN": KerasCNN(nlayers=nlayers),
+        "LSTM": KerasLSTM(nlayers=nlayers),
+        "GRU": KerasGRU(nlayers=nlayers)
     }
     if len(cmd_args) < 2:
         print("No model type specified.")

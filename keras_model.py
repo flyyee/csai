@@ -3,111 +3,131 @@ from numpy import transpose
 from load_data import INPUT_COLS
 
 class KerasModel():
-    def __init__(self, nlayers=1):
+    def __init__(self, name="BaseModel", units=128, steps=1, dropout=0.2, activation="sigmoid", nlayers=1, batch_size=3):
+        self.name = name;
+        self.units = units; self.steps=steps; self.dropout = dropout; self.activation = activation
+        self.nlayers = nlayers; self.batch_size = batch_size
         self.inputs, self.preprocess = self.build_preprocess()
-        self.core_layers = self.create_model(nlayers)
+        self.core_layers = self.create_model()
         self.yaw_output = tf.keras.layers.Dense(1, name="target_yaw")(self.core_layers)
         self.pitch_output = tf.keras.layers.Dense(1, name="target_pitch")(self.core_layers)
-        self.model = tf.keras.Model(inputs=self.inputs, outputs=[self.yaw_output, self.pitch_output])
+        self.model = tf.keras.Model(
+            inputs=self.inputs,
+            outputs=[self.yaw_output, self.pitch_output],
+            name=self.name
+        )
 
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(),
             loss=tf.keras.losses.BinaryCrossentropy(from_logits=True)
         )
-        self.type = "BaseModel"
 
     def build_preprocess(self):
          columns = [tf.keras.layers.Input(shape=1, name=title) for title in INPUT_COLS]
-         return columns, tf.keras.layers.concatenate(columns)
+         concatenated = tf.keras.layers.concatenate(columns)
+         return columns, tf.reshape(concatenated, tf.constant([self.batch_size, self.steps, len(columns)]))
 
-    def create_model(self, nlayers):
+    def create_model(self):
         prev_layer = self.preprocess
-        for _ in range(nlayers):
-            new_layer = tf.keras.layers.Dense(128, activation="sigmoid")(prev_layer)
+        for _ in range(self.nlayers):
+            new_layer = tf.keras.layers.Dense(self.units, activation=self.activation)(prev_layer)
             prev_layer = new_layer
         return prev_layer
 
-    def train(self, data, batch_size=3, epochs=1, **kwargs):
+    def train(self, data, epochs=1, **kwargs):
         inputs, targets, weights = data
         checkpoint = tf.keras.callbacks.ModelCheckpoint(
-            filepath="./checkpoints/{}.ckpt".format(self.type),
+            filepath="./checkpoints/{}.ckpt".format(self.name),
             save_weights_only=True
         )
         self.model.fit(
             {title: inputs[i] for i, title in enumerate(INPUT_COLS)},
             {"target_yaw": targets[0], "target_pitch": targets[1]},
-            batch_size=batch_size,
+            batch_size=self.batch_size,
             epochs=epochs,
             sample_weight=[weights, weights],
             callbacks=[checkpoint],
             **kwargs
         )
 
-    def test(self, data, batch_size=3, **kwargs):
+    def test(self, data, **kwargs):
         inputs, targets, weights = data
         self.model.evaluate(
             {title: inputs[i] for i, title in enumerate(INPUT_COLS)},
             {"target_yaw": targets[0], "target_pitch": targets[1]},
-            batch_size=batch_size,
+            batch_size=self.batch_size,
             sample_weight=[weights, weights],
             **kwargs
         )
 
-    def predict(self, inputs, batch_size=3, **kwargs):
+    def predict(self, inputs, **kwargs):
         predictions = self.model.predict(
             {title: inputs[i] for i, title in enumerate(INPUT_COLS)},
-            batch_size=batch_size,
+            batch_size=self.batch_size,
             **kwargs
         )
-        return transpose(predictions)[0]
+        return transpose(predictions)[0][0]
 
     def summary(self):
         self.model.summary()
 
     def save(self):
-        filename = "./saved_models/{}.h5".format(self.type)
+        filename = "./saved_models/{}.h5".format(self.name)
         self.model.save(filename)
 
     def load(self, filename):
-        if filename[:-3] == ".h5":
+        if filename[-3:] == ".h5":
             self.model = tf.keras.models.load_model(filename)
-        if filename[:-5] == ".ckpt":
+        if filename[-5:] == ".ckpt":
             self.model.load_weights(filename)
 
 class KerasCNN(KerasModel):
-    def __init__(self, nlayers=1):
-        super().__init__(nlayers)
-        self.type = "CNN"
+    def __init__(self, name="CNN", **kwargs):
+        super().__init__(name, **kwargs)
 
-    def create_model(self, nlayers):
+    def create_model(self):
         prev_layer = self.preprocess
-        for _ in range(nlayers):
-            conv_layer = tf.keras.layers.Conv2D(128, (3,3), activation="sigmoid")(prev_layer)
-            drop_layer = tf.keras.layers.Dropout(0.2)(conv_layer)
-            pool_layer = tf.keras.layers.MaxPool2D()(drop_layer)
-            prev_layer = pool_layer
+        for _ in range(self.nlayers):
+            conv_layer = tf.keras.layers.Conv1D(self.units, 1, activation=self.activation)(prev_layer)
+            drop_layer = tf.keras.layers.Dropout(self.dropout)(conv_layer)
+            prev_layer = drop_layer
         return prev_layer
 
 class KerasLSTM(KerasModel):
-    def __init__(self, nlayers=1):
-        super().__init__(nlayers)
-        self.type = "LSTM"
+    def __init__(self, name="LSTM", activation="tanh", **kwargs):
+        super().__init__(name, activation=activation, **kwargs)
 
-    def create_model(self, nlayers):
+    def create_model(self):
         prev_layer = self.preprocess
-        for _ in range(nlayers):
-            lstm_layer = tf.keras.layers.LSTM(128, dropout=0.2)(prev_layer)
+        for _ in range(self.nlayers):
+            lstm_layer = tf.keras.layers.LSTM(
+                self.units,
+                dropout=self.dropout,
+                activation=self.activation,
+                return_sequences=True
+            )(prev_layer)
             prev_layer = lstm_layer
         return prev_layer
 
 class KerasGRU(KerasModel):
-    def __init__(self, nlayers=1):
-        super().__init__(nlayers)
-        self.type = "GRU"
+    def __init__(self, name="GRU", activation="tanh", **kwargs):
+        super().__init__(name, activation=activation, **kwargs)
 
-    def create_model(self, nlayers):
+    def create_model(self):
         prev_layer = self.preprocess
-        for _ in range(nlayers):
-            gru_layer = tf.keras.layers.GRU(128, dropout=0.2)(prev_layer)
+        for _ in range(self.nlayers):
+            gru_layer = tf.keras.layers.GRU(
+                self.units,
+                dropout=self.dropout,
+                activation=self.activation,
+                return_sequences=True
+            )(prev_layer)
             prev_layer = gru_layer
         return prev_layer
+
+if __name__ == "__main__":
+    from load_data import loadDemo, TEST_FILES
+    model = KerasModel(); model.summary()
+    cnn = KerasCNN(nlayers=2); cnn.summary()
+    lstm = KerasLSTM(nlayers=2); lstm.summary()
+    gru = KerasGRU(nlayers=2); gru.summary()
