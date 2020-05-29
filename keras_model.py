@@ -25,19 +25,25 @@ class KerasModel():
     def build_preprocess(self):
          columns = [tf.keras.layers.Input(shape=1, name=title) for title in INPUT_COLS]
          concatenated = tf.keras.layers.concatenate(columns)
-         return columns, tf.reshape(concatenated, tf.constant([self.batch_size, self.steps, len(columns)]))
+         return columns, tf.reshape(
+            concatenated,
+            tf.constant([self.batch_size, self.steps, len(columns)])
+        )
 
     def create_model(self):
         prev_layer = self.preprocess
         for _ in range(self.nlayers):
-            new_layer = tf.keras.layers.Dense(self.units, activation=self.activation)(prev_layer)
+            new_layer = tf.keras.layers.Dense(
+                self.units,
+                activation=self.activation
+            )(prev_layer)
             prev_layer = new_layer
         return prev_layer
 
     def train(self, data, epochs=1, **kwargs):
         inputs, targets, weights = data
         checkpoint = tf.keras.callbacks.ModelCheckpoint(
-            filepath="./checkpoints/{}.ckpt".format(self.name),
+            filepath="./checkpoints/{}-{}layers.ckpt".format(self.name, self.nlayers),
             save_weights_only=True
         )
         self.model.fit(
@@ -72,7 +78,7 @@ class KerasModel():
         self.model.summary()
 
     def save(self):
-        filename = "./saved_models/{}.h5".format(self.name)
+        filename = "./saved_models/{}-{}layers.h5".format(self.name, self.nlayers)
         self.model.save(filename)
 
     def load(self, filename):
@@ -82,13 +88,18 @@ class KerasModel():
             self.model.load_weights(filename)
 
 class KerasCNN(KerasModel):
-    def __init__(self, name="CNN", **kwargs):
+    def __init__(self, name="CNN", kernel_size=1, **kwargs):
+        self.kernel_size = kernel_size
         super().__init__(name, **kwargs)
 
     def create_model(self):
         prev_layer = self.preprocess
         for _ in range(self.nlayers):
-            conv_layer = tf.keras.layers.Conv1D(self.units, 1, activation=self.activation)(prev_layer)
+            conv_layer = tf.keras.layers.Conv1D(
+                self.units,
+                self.kernel_size,
+                activation=self.activation
+            )(prev_layer)
             drop_layer = tf.keras.layers.Dropout(self.dropout)(conv_layer)
             prev_layer = drop_layer
         return prev_layer

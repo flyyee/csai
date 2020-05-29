@@ -19,4 +19,4 @@ if __name__ == "__main__":
     model = models[cmd_args[1]]
     model.load("./saved_models/{}.h5".format(cmd_args[1]))
     test_data = loadDemo(TEST_FILES)
-    model.test(test_data)
+    model.test(test_data, epochs=10)

@@ -6,12 +6,6 @@ from load_data import loadDemo, TRAIN_FILES
 if __name__ == "__main__":
     cmd_args = sys.argv
     nlayers = int(cmd_args[2]) if len(cmd_args) > 2 else 1
-    # models = {
-    #     "BaseModel": BaseModel(nlayers),
-    #     "CNN": CNN(nlayers),
-    #     "LSTM": LSTM(nlayers),
-    #     "GRU": GRU(nlayers)
-    # }
     models = {
         "BaseModel": KerasModel(nlayers=nlayers),
         "CNN": KerasCNN(nlayers=nlayers),
