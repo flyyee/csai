@@ -6,8 +6,8 @@ INPUT_COLS = ["tick", "self_x", "self_y", "self_z", "self_yaw", "self_pitch", "s
 for pnum in range(SPOTTED_CAP):
     INPUT_COLS.extend(["p{}_x".format(pnum), "p{}_y".format(pnum), "p{}_z".format(pnum), "n{}".format(pnum)])
 
-# Demofiles
 TRAIN_FILES = [
+    "1win-vs-syman-m3-dust2,76561197976004330,1,24",
     "singularity-vs-saw-m3-dust2,76561197978321481,1,07",
     "singularity-vs-saw-m3-dust2,76561197992800908,1,14",
     "singularity-vs-saw-m3-dust2,76561197994395491,0,86",
@@ -16,10 +16,6 @@ TRAIN_FILES = [
     "singularity-vs-saw-m3-dust2,76561198028941177,0,67",
     "singularity-vs-saw-m3-dust2,76561198079764052,1,00",
     "singularity-vs-saw-m3-dust2,76561198111983523,0,58"
-]
-TEST_FILES = [
-    "singularity-vs-saw-m3-dust2,76561198047402862,1,36",
-    "singularity-vs-saw-m3-dust2,76561198120557348,0,68"
 ]
 
 def loadDemo(demofiles, tick_diff=100):
@@ -44,16 +40,19 @@ def loadDemo(demofiles, tick_diff=100):
             curr_feature_lst.append(linedata[:8] + linedata[-SPOTTED_CAP*4:])
             curr_target_lst.append(linedata[4:6])
             weight_lst.append(kd)
-        curr_feature_lst.pop(); curr_target_lst.pop(0)
+        curr_feature_lst.pop(); curr_target_lst.pop(0); weight_lst.pop()
         feature_lst += curr_feature_lst
         target_lst += curr_target_lst
+        print("Loaded demo {} with {} sets of data".format(demofn, len(curr_feature_lst)))
+    while len(feature_lst) % 3 != 0:
+        feature_lst.pop(); target_lst.pop(); weight_lst.pop()
     features = np.transpose(np.array(feature_lst))
     targets = np.transpose(np.array(target_lst))
     weights = np.array(weight_lst)
     return features, targets, weights
 
 if __name__ == "__main__":
+    from filenames import TRAIN_FILES
     # print(list(loadDemo(TRAIN_FILES)))
-    features, targets, weights = loadDemo(TRAIN_FILES)
-    print(len(features), len(features[0]))
-    print([col[100:105] for col in features])
+    features, targets, weights = loadDemo(TRAIN_FILES[0:1])
+    print(targets)
