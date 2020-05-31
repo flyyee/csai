@@ -9,3 +9,4 @@ Types:
 1 - notifications
 2 - mouse movements
 3 - read demos
+4 – neural network
