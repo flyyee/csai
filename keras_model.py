@@ -2,6 +2,12 @@ import tensorflow as tf
 from numpy import transpose
 from load_data import INPUT_COLS
 
+"""
+To load and predict the models,
+    model = load_data(<filename>)
+    model.predict(<data>)
+"""
+
 class KerasModel():
     def __init__(self, name="BaseModel", units=128, steps=1, dropout=0.2, activation="sigmoid", nlayers=1, batch_size=3):
         self.name = name;
@@ -66,7 +72,17 @@ class KerasModel():
             **kwargs
         )
 
-    def predict(self, inputs, **kwargs):
+    def predict(self, inputs, spotted_cap=15, **kwargs):
+        """
+        inputs should be a list of lists of shape
+        [tick, self_x, self,y, self_z, self_yaw, self_pitch, spotted, hold, p1_x, p1_y, p1_z, p1_tick, p2_x, ...]
+        It will cap out at 15 values for the other spotted players
+        """
+        rem_len = len(inputs)-8
+        zeroes = [0.0]*len(inputs[0])
+        if rem_len < spotted_cap*4:
+            inputs.append([zeroes]*(spotted_cap*4-rem_len))
+        inputs = inputs[:8] + inputs[-spotted_cap*4:]
         predictions = self.model.predict(
             {title: inputs[i] for i, title in enumerate(INPUT_COLS)},
             batch_size=self.batch_size,
@@ -136,9 +152,26 @@ class KerasGRU(KerasModel):
             prev_layer = gru_layer
         return prev_layer
 
+def load_model(filename, modeltype=None, nlayers=None):
+    """
+    modeltype and nlayers will not need to be defined if using the default naming for the models
+    ./saved_models/<modeltype>-<nlayers>layers.h5
+    """
+    fninfo = filename.split("/")[-1][:-9].split("-")
+    modeltype = fninfo[0] if modeltype == None else modeltype
+    nlayers = int(fninfo[1]) if nlayers == None else nlayers
+    model = \
+        KerasCNN(nlayers=nlayers) if modeltype == "CNN" else \
+        KerasLSTM(nlayers=nlayers) if modeltype == "LSTM" else \
+        KerasGRU(nlayers=nlayers) if modeltype ==  "GRU" else \
+        KerasModel(nlayers=nlayers)
+    model.load(filename)
+    return model
+
 if __name__ == "__main__":
-    from load_data import loadDemo, TEST_FILES
-    model = KerasModel(); model.summary()
-    cnn = KerasCNN(nlayers=2); cnn.summary()
-    lstm = KerasLSTM(nlayers=2); lstm.summary()
-    gru = KerasGRU(nlayers=2); gru.summary()
+    from load_data import load_demo
+    from filenames import TEST_FILES
+    model = load_model("./saved_models/BaseModel-5layers.h5")
+    demofiles = TEST_FILES[:1]
+    inputs, _, _ = load_demo(demofiles)
+    print(model.predict([col[:3] for col in inputs]))
