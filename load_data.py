@@ -18,7 +18,7 @@ TRAIN_FILES = [
     "singularity-vs-saw-m3-dust2,76561198111983523,0,58"
 ]
 
-def loadDemo(demofiles, tick_diff=100):
+def load_demo(demofiles, tick_diff=100):
     feature_lst = []; target_lst = []; weight_lst = []
     for demofn in demofiles:
         kd = float(demofn[-4:].replace(",", "."))
@@ -54,5 +54,5 @@ def loadDemo(demofiles, tick_diff=100):
 if __name__ == "__main__":
     from filenames import TRAIN_FILES
     # print(list(loadDemo(TRAIN_FILES)))
-    features, targets, weights = loadDemo(TRAIN_FILES[0:1])
+    features, targets, weights = load_demo(TRAIN_FILES[0:1])
     print(targets)

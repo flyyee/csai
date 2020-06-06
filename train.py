@@ -1,7 +1,7 @@
 import sys
 
 from keras_model import *
-from load_data import loadDemo
+from load_data import load_demo
 from filenames import TRAIN_FILES
 
 if __name__ == "__main__":
@@ -14,7 +14,7 @@ if __name__ == "__main__":
         KerasGRU(nlayers=nlayers)
     ]
 
-    train_data = loadDemo(TRAIN_FILES)
+    train_data = load_demo(TRAIN_FILES)
     for model in models:
         model.summary()
         model.train(train_data, epochs=10)
