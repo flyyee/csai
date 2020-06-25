@@ -4,21 +4,16 @@ import numpy as np
 SPOTTED_CAP = 15
 INPUT_COLS = ["tick", "self_x", "self_y", "self_z", "self_yaw", "self_pitch", "spotted", "hold"]
 for pnum in range(SPOTTED_CAP):
-    INPUT_COLS.extend(["p{}_x".format(pnum), "p{}_y".format(pnum), "p{}_z".format(pnum), "n{}".format(pnum)])
+    INPUT_COLS.extend(["p{}_x".format(pnum), "p{}_y".format(pnum), "p{}_z".format(pnum), "p{}_tick".format(pnum)])
 
-TRAIN_FILES = [
-    "1win-vs-syman-m3-dust2,76561197976004330,1,24",
-    "singularity-vs-saw-m3-dust2,76561197978321481,1,07",
-    "singularity-vs-saw-m3-dust2,76561197992800908,1,14",
-    "singularity-vs-saw-m3-dust2,76561197994395491,0,86",
-    "singularity-vs-saw-m3-dust2,76561197997981170,1,40",
-    "singularity-vs-saw-m3-dust2,76561198012987839,1,54",
-    "singularity-vs-saw-m3-dust2,76561198028941177,0,67",
-    "singularity-vs-saw-m3-dust2,76561198079764052,1,00",
-    "singularity-vs-saw-m3-dust2,76561198111983523,0,58"
-]
+def spotted_tick_diff(curr_tick, spotted_lst):
+    for i, val in enumerate(spotted_lst):
+        if i % 4 != 3 or val == 0.0:
+            continue
+        spotted_lst[i] = curr_tick - val
+    return spotted_lst
 
-def loadDemo(demofiles, tick_diff=100):
+def load_demo(demofiles, tick_diff=32):
     feature_lst = []; target_lst = []; weight_lst = []
     for demofn in demofiles:
         kd = float(demofn[-4:].replace(",", "."))
@@ -37,7 +32,7 @@ def loadDemo(demofiles, tick_diff=100):
             rem_len = len(linedata)-8
             if rem_len < SPOTTED_CAP*4:
                  linedata.extend([0.0]*(SPOTTED_CAP*4-rem_len))
-            curr_feature_lst.append(linedata[:8] + linedata[-SPOTTED_CAP*4:])
+            curr_feature_lst.append(linedata[:8] + spotted_tick_diff(linedata[0], linedata[-SPOTTED_CAP*4:]))
             curr_target_lst.append(linedata[4:6])
             weight_lst.append(kd)
         curr_feature_lst.pop(); curr_target_lst.pop(0); weight_lst.pop()
@@ -54,5 +49,5 @@ def loadDemo(demofiles, tick_diff=100):
 if __name__ == "__main__":
     from filenames import TRAIN_FILES
     # print(list(loadDemo(TRAIN_FILES)))
-    features, targets, weights = loadDemo(TRAIN_FILES[0:1])
-    print(targets)
+    features, targets, weights = load_demo(TRAIN_FILES[0:1])
+    print(features[-1])
