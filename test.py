@@ -1,6 +1,6 @@
 import sys
 
-from keras_model import *
+from load_model import load_model
 from load_data import load_demo
 from filenames import TEST_FILES
 
