@@ -105,9 +105,9 @@ class KerasModel():
             self.model.load_weights(filename)
 
 class KerasCNN(KerasModel):
-    def __init__(self, name="CNN", kernel_size=1, **kwargs):
+    def __init__(self, name="CNN", kernel_size=1, activation="relu", **kwargs):
         self.kernel_size = kernel_size
-        super().__init__(name, **kwargs)
+        super().__init__(name, activation=activation, **kwargs)
 
     def create_model(self):
         prev_layer = self.preprocess
