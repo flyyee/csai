@@ -33,6 +33,8 @@ class BaseModel(tf.keras.Sequential):
             epoch_loss_avg = tf.keras.metrics.Mean()
             epoch_accuracy = tf.keras.metrics.SparseCategoricalAccuracy()
 
+            f, t, w = data
+            data = zip(f,t,w)
             for features, targets, weights in data:
                 # Features – model inputs
                 # Targets – target outputs
@@ -40,7 +42,7 @@ class BaseModel(tf.keras.Sequential):
 
                 # zip column names with column values
                 feature_dict = dict([
-                    (INPUT_COLS[i], tf.convert_to_tensor([val[i] for val in features.numpy()]))
+                    (INPUT_COLS[i], tf.convert_to_tensor(features[i]))
                     for i in range(len(INPUT_COLS))
                 ])
                 with tf.GradientTape() as tape:
@@ -96,3 +98,10 @@ class GRU(BaseModel):
     def create_model(self, nlayers=1):
         for _ in range(nlayers):
             self.add(tf.keras.layers.GRU(128, dropout=0.2)) # default activation is tanh
+
+if __name__ == "__main__":
+    from filenames import TRAIN_FILES
+    from load_data import load_demo
+    data = load_demo(TRAIN_FILES[0:1])
+    model = BaseModel(nlayers=2)
+    model.train(data, epochs=2)
