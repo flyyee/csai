@@ -26,7 +26,6 @@ class KerasBranched(KerasModel):
 
     def create_model(self):
         player_prev, spotted_prev = self.preprocess
-
         for _ in range(self.combine_at):
             player_layer = tf.keras.layers.Dense(
                 self.units,

@@ -1,7 +1,7 @@
 import sys
 
 from keras_model import *
-from custom_model import *
+from branched_model import *
 from load_data import load_demo
 from filenames import TRAIN_FILES
 
