@@ -118,7 +118,8 @@ class KerasCNN(KerasModel):
                 activation=self.activation
             )(prev_layer)
             drop_layer = tf.keras.layers.Dropout(self.dropout)(conv_layer)
-            prev_layer = drop_layer
+            pool_layer = tf.keras.layers.MaxPool1D()(drop_layer)
+            prev_layer = pool_layer
         return prev_layer
 
 class KerasLSTM(KerasModel):
