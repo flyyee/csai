@@ -50,4 +50,4 @@ if __name__ == "__main__":
     from filenames import TRAIN_FILES
     # print(list(loadDemo(TRAIN_FILES)))
     features, targets, weights = load_demo(TRAIN_FILES[0:1])
-    print(features[-1])
+    print({"target_yaw": targets[0], "target_pitch": targets[1]})

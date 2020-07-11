@@ -6,6 +6,9 @@ from numpy import array
 IO_FN = "com.txt"
 MODEL_FN = "./saved_models/BranchedModel_GRU-5layers-v4.h5"
 
+def mod360(v):
+    return v - (v//360)*360
+
 prev_timestamp = 0
 start_time = datetime.now().microsecond*1000
 model = load_model(MODEL_FN)
@@ -20,8 +23,7 @@ while True:
     data = [array([float(d), 0.0, 0.0]) for d in strdata]
     curr_yaw, curr_pitch = strdata[4:6]
     new_yaw, new_pitch = model.predict(data)[0]
-    print(new_yaw, new_pitch, curr_yaw, curr_pitch)
-    change_yaw, change_pitch = float(new_yaw)-float(curr_yaw), float(new_pitch)-float(curr_pitch)
+    change_yaw, change_pitch = mod360(float(new_yaw))-float(curr_yaw), mod360(float(new_pitch))-float(curr_pitch)
     new_timestamp = datetime.now().microsecond*1000 - start_time
     with open(IO_FN, "a") as outputfile:
         outputfile.write("output,{},{},{}\n".format(
