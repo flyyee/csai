@@ -1,5 +1,5 @@
 import tensorflow as tf
-from numpy import transpose
+from numpy import array, transpose
 from load_data import INPUT_COLS
 
 """
@@ -80,9 +80,10 @@ class KerasModel():
         It will cap out at 15 values for the other spotted players
         """
         rem_len = len(inputs)-8
-        zeroes = [0.0]*len(inputs[0])
-        if rem_len < spotted_cap*4:
-            inputs.append([zeroes]*(spotted_cap*4-rem_len))
+        zeroes = array([0.0]*len(inputs[0]))
+        while rem_len < spotted_cap*4:
+            inputs.append(zeroes)
+            rem_len += 1
         inputs = inputs[:8] + inputs[-spotted_cap*4:]
         predictions = self.model.predict(
             {title: inputs[i] for i, title in enumerate(INPUT_COLS)},

@@ -20,9 +20,8 @@ def load_model(filename, modeltype=None, nlayers=None):
     return model
 
 if __name__ == "__main__":
-    from load_data import load_demo
+    # from load_data import load_demo
     from filenames import TEST_FILES
-    model = load_model("./saved_models/BaseModel-5layers.h5")
-    demofiles = TEST_FILES[:1]
-    inputs, _, _ = load_demo(demofiles)
-    print(model.predict([col[:3] for col in inputs]))
+    import numpy
+    model = load_model("./saved_models/BranchedModel_GRU-5layers-v4.h5")
+    print(model.predict([numpy.array([64.0, 0.0, 0.0]),numpy.array([-367.000000, 0.0, 0.0]),numpy.array([-808.000000, 0.0, 0.0]),numpy.array([83.745102, 0.0, 0.0]),numpy.array([-0.051801, 0.0, 0.0]),numpy.array([-179.720718, 0.0, 0.0]),numpy.array([0.0, 0.0, 0.0]),numpy.array([0.0, 0.0, 0.0])]))
