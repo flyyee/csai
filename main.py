@@ -1,5 +1,5 @@
 from load_model import load_model
-from datetime import datetime
+import time
 from numpy import array
 
 # TODO: define
@@ -10,7 +10,7 @@ def mod360(v):
     return v - (v//360)*360
 
 prev_timestamp = 0
-start_time = datetime.now().microsecond*1000
+start_time = int(round(time.time() * 1000))
 model = load_model(MODEL_FN)
 while True:
     status = ""; timestamp = prev_timestamp
@@ -24,7 +24,7 @@ while True:
     curr_yaw, curr_pitch = strdata[4:6]
     new_yaw, new_pitch = model.predict(data)[0]
     change_yaw, change_pitch = mod360(float(new_yaw))-float(curr_yaw), mod360(float(new_pitch))-float(curr_pitch)
-    new_timestamp = datetime.now().microsecond*1000 - start_time
+    new_timestamp = int(round(time.time() * 1000)) - start_time
     with open(IO_FN, "a") as outputfile:
         outputfile.write("output,{},{},{}\n".format(
             new_timestamp,
