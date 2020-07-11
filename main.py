@@ -19,8 +19,13 @@ while True:
         status, timestamp = last_line[:2]
     data = last_line[2:]
     curr_yaw, curr_pitch = data[4:6]
-    new_yaw, new_pitch = model.predict([data])[0]m
+    new_yaw, new_pitch = model.predict([data])[0]
     change_yaw, change_pitch = new_yaw-curr_yaw, new_pitch-curr_pitch
     new_timestamp = datetime.now().microsecond*1000 - start_time
     with open(IO_FN, "a") as outputfile:
-        outputfile.write("output,{},{},{}\n".format(timeinms, new_timestamp, change_yaw, change_pitch))
+        outputfile.write("output,{},{},{}\n".format(
+            timeinms,
+            new_timestamp,
+            change_yaw,
+            change_pitch
+        ))
