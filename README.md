@@ -19,21 +19,28 @@ Types:
 |   |-- app.js
 |   |-- package-lock.json
 |-- nn_training/
-|   |-- branched_model.py
+|   |-- demofiles.zip
 |   |-- filenames.py
-|   |-- keras_model.py
 |   |-- load_data.py
+|   |-- branched_model.py
+|   |-- keras_model.py
 |   |-- test.py
 |   |-- train.py
 |-- saved_models/
-|-- .gitattributes
-|-- com.txt
-|-- load_model.py
+|   |-- BaseModel-5layers-v1.h5				
+|   |-- CNN-5layers-v1.h5
+|   |-- GRU-5layers-v1.h5		
+|   |-- LSTM-5layers-v1.h5
+|   |-- BranchedModel_GRU-5layers-v4.h5
+|   |-- BranchedModel_LSTM-5layers-v4.h5
 |-- main.cpp
-|-- main.py
 |-- MemoryManager.h
+|-- main.py
+|-- load_model.py
+|-- com.txt
 |-- README.md
 |-- requirements.txt
+|-- .gitattributes
 ```
 
 ## Installation
@@ -60,7 +67,7 @@ no non-standard libraries required
 
 ## Instructions
 ### Main CSAI Program
-1. compile main.cpp in visual studio 2019
+1. compile `main.cpp` in visual studio 2019
 2. run `main.py` and `main.exe`
 3. key to activate the program is F5
 
@@ -76,7 +83,8 @@ no more than 20 demo files are recommended to be parsed at once
 
 ### Training
 1. go to the `nn_training` folder: `$ cd nn_training`
-2. run `$ python3 train.py <modelname> <nlayers> <version>`
+2. unzip `demofiles.zip`
+3. run `$ python3 train.py <modelname> <nlayers> <version>`
   - `modelname` can be "BaseModel", "CNN", "LSTM", "GRU" or "BranchedModel"
 
 if you do not want weights to be factored in,
@@ -87,7 +95,8 @@ go to `keras_model.py` and comment out line 61
 
 ### Testing
 1. go to the `nn_training` folder: `$ cd nn_training`
-2. run `$ python3 test.py <filename>`
+2. unzip `demofiles.zip`
+3. run `$ python3 test.py <filename>`
   - ensure that the file can be found in the `saved_models` folder
 
 note that when using the v1 models,
