@@ -126,7 +126,7 @@ void MoveXhair(float endPitch, float endYaw) { // moves player crosshair
 		}
 		LocalPlayer_Base = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwLocalPlayer);
 		currentTimePitch = GetTickCount();
-		
+
 		if (!pitchComplete) {
 			if (pitchDirection == -1) {
 				if (myEyePitch <= endPitch) {
@@ -204,7 +204,7 @@ void MoveXhair(float endPitch, float endYaw) { // moves player crosshair
 		previousTimeYaw = currentTimeYaw;
 		Mem->Write<Vec3>(clientState + dwClientState_ViewAngles, eyeVec); // writes to game memory
 	}
-	
+
 }
 
 // writes the game state to the shared file with the ai
@@ -260,7 +260,7 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 			fileInput += "input," + std::to_string(currentTick) + ",";
 			fileInput += std::to_string(currentTick) + "," + std::to_string(myPosX) + "," + std::to_string(myPosY) + "," + std::to_string(myPosZ) + ",";
 			fileInput += std::to_string(myEyePitch) + "," + std::to_string(myEyeYaw) + ",spotted" + std::to_string(spottedList.size()) + ",hold" + (hold ? "1" : "0");
-			
+
 			for (auto& spot : spottedList) {
 				fileInput += "," + std::to_string(spot.posX) + "," + std::to_string(spot.posY) + "," + std::to_string(spot.posZ) + "," + std::to_string(spot.tick);
 			}
@@ -272,7 +272,8 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 			myfile << fileInput;
 			myfile.close();
 			// write to file the input to the ai
-			
+
+			// reads ideal yaw and pitch movements from shared file with ai
 			for (int pollFileCount = 0; pollFileCount < 15; pollFileCount++) {
 				// continuously polls the file for 3 seconds to receive the output from the ai
 				std::fstream myfile2;
@@ -299,7 +300,7 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 				std::string lastLine;
 				std::getline(myfile2, lastLine);
 				myfile2.close();
-				
+
 				int linePos1 = 0, linePos2 = 0;
 				float outputPitch, outputYaw;
 				linePos2 = lastLine.find(",");
@@ -310,6 +311,7 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 					int newOutputTime = std::stoll(lastLine.substr(linePos1, linePos2 - linePos1));
 					if (newOutputTime > lastOutputTime) { // checks if line was written after the last previous read
 						lastOutputTime = newOutputTime;
+						// move crosshair based on ideal yaw and pitch calculated by the ai
 						linePos1 = linePos2+1;
 						linePos2 = lastLine.find(",");
 						outputPitch = std::stof(lastLine.substr(linePos1, linePos2 - linePos1));
@@ -328,12 +330,12 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 	}
 }
 
-void GetStats() { // records the instantaneous state of the game and 
+void GetStats() { // records the instantaneous state of the game and
 	std::vector<Spot> spottedList(0); // list of spotted players
 	const unsigned long long startTime = GetTickCount();
 	bool stopFlag = false;
 	// creates a thread to wait for key press to activate the ai
-	std::thread tSendInfo(SendInfo, startTime, std::ref(spottedList), std::ref(stopFlag)); 
+	std::thread tSendInfo(SendInfo, startTime, std::ref(spottedList), std::ref(stopFlag));
 
 	const int tickrate = 64;
 	DWORD LocalPlayer_Base, Grp_Base;
@@ -347,8 +349,8 @@ void GetStats() { // records the instantaneous state of the game and
 
 		Grp_Base = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwGameRulesProxy);
 		freezetime = Mem->Read<bool>(Grp_Base + m_bFreezePeriod);
+		// check if round is over
 		if (freezetime) {
-			// round over
 			spottedList.clear();
 		}
 
@@ -361,7 +363,7 @@ void GetStats() { // records the instantaneous state of the game and
 			if (playerTeamId != 2 && playerTeamId != 3) continue; // checks if the entity is a valid player
 
 			wchar_t* playerLastPlace = Mem->Read<wchar_t*>(playerBase + m_szLastPlaceName); // reads the player's last position's name
-			
+
 			if (playerTeamId != myTeamId) { // player not on user's team
 				bool spotted = Mem->Read<bool>(playerBase + m_bSpotted);
 				if (spotted) {

@@ -13,7 +13,7 @@ public:
     DWORD ClientDLL_Base, ClientDLL_Size;
     DWORD EngineDLL_Base, EngineDLL_Size;
 
-	bool AttachProcess(const char* ProcessName)
+	bool AttachProcess(const char* ProcessName) // check if cs:go is opened
 	{
 		HANDLE hPID = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
 		PROCESSENTRY32 procEntry;
@@ -37,7 +37,7 @@ public:
 		CloseHandle(hPID);
 		return false;
 	}
-	MODULEENTRY32 GetModule(const char* ModuleName)
+	MODULEENTRY32 GetModule(const char* ModuleName) // locate memory address of client and engine modules
 	{
 		HANDLE hModule = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPID);
 		MODULEENTRY32 mEntry;

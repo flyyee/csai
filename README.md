@@ -88,9 +88,9 @@ no more than 20 demo files are recommended to be parsed at once
   - `modelname` can be "BaseModel", "CNN", "LSTM", "GRU" or "BranchedModel"
 
 if you do not want weights to be factored in,
-go to `keras_model.py` and comment out line 61
+go to `keras_model.py` and comment out line 73
 ```python
-61|       # sample_weight=[weight, weight]
+73|       # sample_weight=[weight, weight]
 ```
 
 ### Testing
@@ -103,4 +103,10 @@ note that when using the v1 models,
 `INPUT_COLS` will have to be edited at line 7 of `load_data.py` as follows:
 ```python
 7|    INPUT_COLS.extend(["p{}_x".format(pnum), "p{}_y".format(pnum), "p{}_z".format(pnum), "n{}".format(pnum)])
+```
+
+if you do not want weights to be factored in,
+go to `keras_model.py` and comment out line 86
+```python
+86|       # sample_weight=[weight, weight]
 ```
