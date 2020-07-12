@@ -6,25 +6,19 @@
 #include <string>
 
 MemoryManager* Mem;
+// offsets
 #define dwLocalPlayer 0xD3DBEC
 #define m_iTeamNum 0xF4
-//#define m_iCrossHairID 0xB3E4
 #define dwEntityList 0x4D523EC
-//#define m_bDormant 0xED
 
 #define m_angEyeAnglesX 0xB37C
 #define m_angEyeAnglesY 0xB380
 #define m_vecOrigin 0x138
-//#define m_vecViewOffset 0x108
 
 #define m_bSpotted 0x93D
 #define m_iTeamNum 0xF4
-//#define m_szCustomName 0x303C
 #define m_bBombPlanted 0x99D
-//#define m_iAccountID 0x2FC8
 
-//#define dwRadarBase 0x5184F9C
-//#define dwClientState_PlayerInfo 0x52B8
 #define m_szLastPlaceName 0x35B4
 #define dwGameRulesProxy 0x526F38C
 #define m_bFreezePeriod 0x20
@@ -32,46 +26,9 @@ MemoryManager* Mem;
 #define dwClientState 0x58ADD4
 #define dwClientState_ViewAngles 0x4D88
 
-const std::string inputFN = "com.txt";
+const std::string inputFN = "com.txt"; // file to communicate between ai and csgo helper
 
-bool TriggerToggled = false;
-
-//void Trigger()
-//{
-//	while (true)
-//	{
-//		//Check for toggle on/off
-//		if (GetAsyncKeyState(VK_F1)) //You can customize the toggle key
-//		{
-//			TriggerToggled = !TriggerToggled;
-//			if (TriggerToggled) std::cout << "Awesome triggerbot now ON" << std::endl;
-//			else std::cout << "Awesome triggerbot now OFF" << std::endl;
-//			Sleep(200);
-//		}
-//		//If the triggerbot is not toggled, skip the iteration
-//		if (!TriggerToggled) continue;
-//
-//		//Retrieve player informations
-//		DWORD LocalPlayer_Base = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwLocalPlayer);
-//		int LocalPlayer_inCross = Mem->Read<int>(LocalPlayer_Base + m_iCrossHairID);
-//		int LocalPlayer_Team = Mem->Read<int>(LocalPlayer_Base + m_iTeamNum);
-//		//Retrieve the EntityBase, using dwEntityList
-//		DWORD Trigger_EntityBase = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwEntityList + ((LocalPlayer_inCross - 1) * 0x10));
-//		int Trigger_EntityTeam = Mem->Read<int>(Trigger_EntityBase + m_iTeamNum);
-//		//bDormant is a boolean value, the offset is 0xE9
-//		bool Trigger_EntityDormant = Mem->Read<bool>(Trigger_EntityBase + m_bDormant);
-//		if ((LocalPlayer_inCross > 0 && LocalPlayer_inCross <= 64) && (Trigger_EntityBase != NULL) && (Trigger_EntityTeam != LocalPlayer_Team) && (!Trigger_EntityDormant))
-//		{
-//			//External way, you can customize the delays
-//			Sleep(10); //Delay before shooting
-//			mouse_event(MOUSEEVENTF_LEFTDOWN, NULL, NULL, NULL, NULL);
-//			Sleep(10); //Delay between shots
-//			mouse_event(MOUSEEVENTF_LEFTUP, NULL, NULL, NULL, NULL);
-//			Sleep(10); //Delay after shooting
-//		}
-//	}
-//}
-
+// player information structure, for obtaining specific information from a region in memory
 struct player_info_t
 {
 	int64_t __pad0;
@@ -93,7 +50,7 @@ struct player_info_t
 	unsigned char filesdownloaded;
 };
 
-struct Spot {
+struct Spot { // structure representing an occurrence of spotting a player
 	long int tick;
 	float posX, posY, posZ;
 	wchar_t* uid;
@@ -103,23 +60,24 @@ struct Vec3 {
 	float x, y, z;
 };
 
-void MoveXhair(float endPitch, float endYaw) {
+void MoveXhair(float endPitch, float endYaw) { // moves player crosshair
 	Sleep(1000);
 	std::cout << "Moving Xhair..." << std::endl;
 	bool stop = false;
 	const float pitchSpeed = 0.2, yawSpeed = 0.2; // in degrees/ms
+	// obtains time for measuring speeds and performing stop conditions
 	DWORD startTime = GetTickCount();
 	DWORD currentTimePitch, startTimePitch = GetTickCount();
 	DWORD previousTimePitch = startTimePitch;
 	DWORD currentTimeYaw, startTimeYaw = GetTickCount();
 	DWORD previousTimeYaw = startTimeYaw;
-	DWORD LocalPlayer_Base = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwLocalPlayer);
-	DWORD clientState = Mem->Read<DWORD>(Mem->EngineDLL_Base + dwClientState);
+	DWORD LocalPlayer_Base = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwLocalPlayer); // information about the current player
+	DWORD clientState = Mem->Read<DWORD>(Mem->EngineDLL_Base + dwClientState); // modifiable variables for the current player
 
 	float myEyePitch = Mem->Read<float>(LocalPlayer_Base + m_angEyeAnglesX);
 	float myEyeYaw = Mem->Read<float>(LocalPlayer_Base + m_angEyeAnglesY);
-	int pitchDirection = 0, yawDirection = 0;
-	bool pitchComplete = false, yawComplete = false;
+	int pitchDirection = 0, yawDirection = 0; // determines the direction in which to move the crosshair
+	bool pitchComplete = false, yawComplete = false; // whether the movement is complete
 	Vec3 eyeVec;
 	eyeVec.x = myEyePitch, eyeVec.y = myEyeYaw, eyeVec.z = 0;
 
@@ -130,7 +88,7 @@ void MoveXhair(float endPitch, float endYaw) {
 		yawComplete = true;
 	}
 	if (myEyePitch > 90) {
-		// makes pitch in range -90 to 90
+		// converts pitch to range -90 to 90
 		myEyePitch -= 360;
 	}
 	if (endPitch > 90) {
@@ -170,7 +128,6 @@ void MoveXhair(float endPitch, float endYaw) {
 		currentTimePitch = GetTickCount();
 		
 		if (!pitchComplete) {
-			//myEyePitch = Mem->Read<float>(LocalPlayer_Base + m_angEyeAnglesX);
 			if (pitchDirection == -1) {
 				if (myEyePitch <= endPitch) {
 					pitchComplete = true;
@@ -190,8 +147,6 @@ void MoveXhair(float endPitch, float endYaw) {
 				myEyePitch = -89;
 				pitchComplete = true;
 			}
-			//std::cout << myEyePitch << std::endl;
-			//std::cout << Mem->Read<float>(LocalPlayer_Base + m_angEyeAnglesX);
 			clientState = Mem->Read<DWORD>(Mem->EngineDLL_Base + dwClientState);
 			eyeVec.x = myEyePitch;
 		}
@@ -247,11 +202,12 @@ void MoveXhair(float endPitch, float endYaw) {
 			eyeVec.y = myEyeYaw;
 		}
 		previousTimeYaw = currentTimeYaw;
-		Mem->Write<Vec3>(clientState + dwClientState_ViewAngles, eyeVec);
+		Mem->Write<Vec3>(clientState + dwClientState_ViewAngles, eyeVec); // writes to game memory
 	}
 	
 }
 
+// writes the game state to the shared file with the ai
 void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList, bool &stopFlag) {
 	DWORD LocalPlayer_Base, Grp_Base;
 	int myTeamId;
@@ -265,21 +221,13 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 	while(!stopFlag) {
 		if (GetAsyncKeyState(VK_F5)) {
 			//Retrieve player information
-			//MoveXhair(17.55, 354.61);
 			LocalPlayer_Base = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwLocalPlayer);
 			myTeamId = Mem->Read<int>(LocalPlayer_Base + m_iTeamNum);
 			myEyePitch = Mem->Read<float>(LocalPlayer_Base + m_angEyeAnglesX);
 			myEyeYaw = Mem->Read<float>(LocalPlayer_Base + m_angEyeAnglesY);
-			//if (myEyePitch > 90.0) {
-			//	myEyePitch -= 360.0;
-			//}
-			//if (myEyeYaw > 180.0) {
-			//	myEyeYaw -= 360.0;
-			//}
 			myPosX = Mem->Read<float>(LocalPlayer_Base + m_vecOrigin);
 			myPosY = Mem->Read<float>(LocalPlayer_Base + m_vecOrigin + 0x4);
 			myPosZ = Mem->Read<float>(LocalPlayer_Base + m_vecOrigin + 0x8);
-			//myPosZ += 64.06;
 			std::cout << "Eye angles: " << myEyePitch << " " << myEyeYaw << std::endl;
 			std::cout << "Position: " << myPosX << " " << myPosY << " " << myPosZ << std::endl;
 
@@ -323,11 +271,14 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 			myfile.open(inputFN, std::ios_base::app);
 			myfile << fileInput;
 			myfile.close();
+			// write to file the input to the ai
 			
 			for (int pollFileCount = 0; pollFileCount < 15; pollFileCount++) {
+				// continuously polls the file for 3 seconds to receive the output from the ai
 				std::fstream myfile2;
 				myfile2.open(inputFN);
 
+				// reads the last line of the file
 				myfile2.seekg(-1, std::ios_base::end);
 				bool keepLooping = true;
 				while (keepLooping) {
@@ -353,11 +304,11 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 				float outputPitch, outputYaw;
 				linePos2 = lastLine.find(",");
 				std::cout << lastLine << std::endl;
-				if (lastLine.substr(linePos1, linePos2) == "output") {
+				if (lastLine.substr(linePos1, linePos2) == "output") { // checks if line type is output
 					linePos1 = linePos2+1;
 					linePos2 = lastLine.find(",");
 					int newOutputTime = std::stoll(lastLine.substr(linePos1, linePos2 - linePos1));
-					if (newOutputTime > lastOutputTime) {
+					if (newOutputTime > lastOutputTime) { // checks if line was written after the last previous read
 						lastOutputTime = newOutputTime;
 						linePos1 = linePos2+1;
 						linePos2 = lastLine.find(",");
@@ -365,7 +316,6 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 						linePos1 = linePos2+1;
 						outputYaw = std::stof(lastLine.substr(linePos1, lastLine.length() - linePos1));
 						MoveXhair(outputPitch, outputYaw);
-						std::cout << "MOVING AHD";
 						break;
 					}
 				}
@@ -378,31 +328,19 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 	}
 }
 
-void GetStats() {
-	std::vector<Spot> spottedList(0);
+void GetStats() { // records the instantaneous state of the game and 
+	std::vector<Spot> spottedList(0); // list of spotted players
 	const unsigned long long startTime = GetTickCount();
 	bool stopFlag = false;
-	std::thread tSendInfo(SendInfo, startTime, std::ref(spottedList), std::ref(stopFlag));
+	// creates a thread to wait for key press to activate the ai
+	std::thread tSendInfo(SendInfo, startTime, std::ref(spottedList), std::ref(stopFlag)); 
 
 	const int tickrate = 64;
 	DWORD LocalPlayer_Base, Grp_Base;
 	int myTeamId;
 	bool freezetime;
 	std::cout << "Started recording stats..." << std::endl;
-	/*MoveXhair(330, 330);*/
 	while (true) {
-		////Check for toggle on/off
-		//if (GetAsyncKeyState(VK_F4))
-		//{
-		//	TriggerToggled = !TriggerToggled;
-		//	if (TriggerToggled) std::cout << "Awesome statbot now ON" << std::endl;
-		//	else std::cout << "Awesome statbot now OFF" << std::endl;
-		//	Sleep(200);
-		//}
-		////If the triggerbot is not toggled, skip the iteration
-		//if (!TriggerToggled) continue;
-		
-
 		LocalPlayer_Base = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwLocalPlayer);
 
 		myTeamId = Mem->Read<int>(LocalPlayer_Base + m_iTeamNum);
@@ -414,17 +352,17 @@ void GetStats() {
 			spottedList.clear();
 		}
 
-		for (int i = 1; i < 64; i++)
-		{
+		for (int i = 1; i < 64; i++) {
+			// iterates over all entities in the list, includes players
 			DWORD playerBase = Mem->Read<DWORD>(Mem->ClientDLL_Base + dwEntityList + (i * 0x10));
 			if (!playerBase) continue;
 
 			int playerTeamId = Mem->Read<int>(playerBase + m_iTeamNum);
-			if (playerTeamId != 2 && playerTeamId != 3) continue;
+			if (playerTeamId != 2 && playerTeamId != 3) continue; // checks if the entity is a valid player
 
-			wchar_t* playerLastPlace = Mem->Read<wchar_t*>(playerBase + m_szLastPlaceName);
+			wchar_t* playerLastPlace = Mem->Read<wchar_t*>(playerBase + m_szLastPlaceName); // reads the player's last position's name
 			
-			if (playerTeamId != myTeamId) {
+			if (playerTeamId != myTeamId) { // player not on user's team
 				bool spotted = Mem->Read<bool>(playerBase + m_bSpotted);
 				if (spotted) {
 					Spot newSpot;
@@ -438,6 +376,7 @@ void GetStats() {
 					newSpot.tick = currentTime / 1000 * 64;;
 					newSpot.uid = Mem->Read<wchar_t*>(playerBase + m_szLastPlaceName);
 
+					// merges duplicate spots
 					for (int x = spottedList.size()-1; x >= 0; x--) {
 						if (newSpot.tick - spottedList[x].tick < 256) {
 							// spot occurred <256ticks (4s) before current spot

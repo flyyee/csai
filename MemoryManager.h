@@ -17,14 +17,14 @@ public:
 	{
 		HANDLE hPID = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
 		PROCESSENTRY32 procEntry;
-		procEntry.dwSize = sizeof(procEntry);
+		procEntry.dwSize = sizeof(procEntry); // size of process entry
 
 		const WCHAR* procNameChar;
 		int nChars = MultiByteToWideChar(CP_ACP, 0, ProcessName, -1, NULL, 0);
 		procNameChar = new WCHAR[nChars];
 		MultiByteToWideChar(CP_ACP, 0, ProcessName, -1, (LPWSTR)procNameChar, nChars);
 
-		do
+		do // looks for csgo process
 			if (!wcscmp(procEntry.szExeFile, procNameChar))
 			{
 				this->dwPID = procEntry.th32ProcessID;
@@ -41,14 +41,14 @@ public:
 	{
 		HANDLE hModule = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPID);
 		MODULEENTRY32 mEntry;
-		mEntry.dwSize = sizeof(mEntry);
+		mEntry.dwSize = sizeof(mEntry); // size of module entry
 
 		const WCHAR* modNameChar;
 		int nChars = MultiByteToWideChar(CP_ACP, 0, ModuleName, -1, NULL, 0);
 		modNameChar = new WCHAR[nChars];
 		MultiByteToWideChar(CP_ACP, 0, ModuleName, -1, (LPWSTR)modNameChar, nChars);
 
-		do
+		do // looks for csgo module
 			if (!wcscmp(mEntry.szModule, modNameChar))
 			{
 				CloseHandle(hModule);
@@ -61,7 +61,7 @@ public:
 		return mEntry;
 	}
 	template<class c>
-	c Read(DWORD dwAddress)
+	c Read(DWORD dwAddress) // read from process memory
 	{
 		c val;
 		ReadProcessMemory(hProcess, (LPVOID)dwAddress, &val, sizeof(c), NULL);
@@ -69,7 +69,7 @@ public:
 	}
 
 	template<class c>
-	BOOL Write(DWORD dwAddress, c ValueToWrite)
+	BOOL Write(DWORD dwAddress, c ValueToWrite) // write to process memory
 	{
 		return WriteProcessMemory(hProcess, (LPVOID)dwAddress, &ValueToWrite, sizeof(c), NULL);
 	}
