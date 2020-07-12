@@ -1,5 +1,5 @@
-from keras_model import *
-from branched_model import *
+from nn_training.keras_model import *
+from nn_training.branched_model import *
 
 def load_model(filename, modeltype=None, nlayers=None):
     """
