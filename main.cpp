@@ -273,7 +273,7 @@ void SendInfo(const unsigned long long startTime, std::vector<Spot> &spottedList
 			myfile.close();
 			// write to file the input to the ai
 
-			// reads ideal yaw and pitch movements from shared file with ai
+			// reads ideal yaw and pitch from shared file with ai
 			for (int pollFileCount = 0; pollFileCount < 15; pollFileCount++) {
 				// continuously polls the file for 3 seconds to receive the output from the ai
 				std::fstream myfile2;

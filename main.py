@@ -24,15 +24,12 @@ while True:
     # cleans data to be passed into the neural network
     strdata[6] = strdata[6][7:]; strdata[7] = strdata[7][4:]
     data = [array([float(d), 0.0, 0.0]) for d in strdata]
-    curr_yaw, curr_pitch = strdata[4:6] # get the current pitch and yaw
     new_yaw, new_pitch = model.predict(data)[0] # pass game state into neural network
-    # calculate the ideal change in pitch and yaw
-    change_yaw, change_pitch = mod360(float(new_yaw))-float(curr_yaw), mod360(float(new_pitch))-float(curr_pitch)
-    # writes ideal pitch and yaw movements to shared file with csgo helper
+    # writes ideal pitch and yaw to shared file with csgo helper
     new_timestamp = int(round(time.time() * 1000)) - start_time
     with open(IO_FN, "a") as outputfile:
         outputfile.write("output,{},{},{}\n".format(
             new_timestamp,
-            change_yaw,
-            change_pitch
+            mod360(new_yaw),
+            mod360(new_pitch)
         ))
