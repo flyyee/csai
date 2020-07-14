@@ -13,6 +13,7 @@ Types:
 4. neural network
 
 ## Directory Navigation
+Main application:
 ```
 .
 |-- demo_parser/
@@ -27,10 +28,16 @@ Types:
 |   |-- test.py
 |   |-- train.py
 |-- saved_models/
-|   |-- BaseModel-5layers-v1.h5				
+|   |-- BaseModel-5layers-v1.h5
+|   |-- BaseModel-5layers-v2.h5				
 |   |-- CNN-5layers-v1.h5
-|   |-- GRU-5layers-v1.h5		
+|   |-- CNN-5layers-v2.h5
+|   |-- GRU-5layers-v1.h5
+|   |-- GRU-5layers-v2.h5
+|   |-- GRU-5layers-v3.h5		
 |   |-- LSTM-5layers-v1.h5
+|   |-- LSTM-5layers-v2.h5
+|   |-- LSTM-5layers-v3.h5
 |   |-- BranchedModel_GRU-5layers-v4.h5
 |   |-- BranchedModel_LSTM-5layers-v4.h5
 |-- main.cpp
@@ -38,6 +45,11 @@ Types:
 |-- main.py
 |-- load_model.py
 |-- com.txt
+```
+Report, README and others:
+```
+|-- finalreport_files/
+|-- finalreport.md
 |-- README.md
 |-- requirements.txt
 |-- .gitattributes
@@ -49,18 +61,18 @@ only runs on windows as native windows processes are used,
 no non-standard libraries required
 
 ### Node.js
-1. download nodejs from https://nodejs.org/en/download/
+1. download [node.js](https://nodejs.org/en/download/)
   - download npm together with nodejs during the installation
 2. run "npm i" in the directory with app.js
 
 ### Python
-1. download python3 at https://www.python.org/downloads/
+1. download [python3](https://www.python.org/downloads/)
 2. run `$ pip3 install -r requirements.txt` to install the tensorflow and numpy libraries
   - Otherwise, run `$ pip install -Iv 'tensorflow>=2.0.0'` and `$ pip install numpy`
 
 ### CS:GO
-1. install steam from https://store.steampowered.com/about/
-2. install csgo from https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/
+1. install [steam](https://store.steampowered.com/about/)
+2. install [csgo](https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/)
 3. start csgo with the following launch options: `(library > counter-strike: global offensive > properties > set launch option) "-untrusted -insecure"`
   - the latest version of csgo may contain a version of dust2 that is different from the version we are training our model on. copy the folder from dust2 map to your steam: `install location > steamapps\common\Counter-Strike Global Offensive\csgo\maps\workshop`
 4. start an offline game with bots with the workshop map de_dust2
